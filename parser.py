@@ -1,16 +1,24 @@
 import json
 
-with open("dataset/seccode.json") as file:
-    lines = [line.rstrip() for line in file]
+with open("dataset/seccode-py.json") as file:
+    data = json.load(file)
+    index = 0
+    for item in data:
+        f = open( f'seccode/py/test/{index}-{item["task_description"]["function_name"]}.py', 'w', encoding="utf-8")
+        s = item["unittest"]["testcases"].replace("```python", "")
+        s = s.replace("```", "")
+        f.write(s)
+        index+=1
 
-changed_data = []
-for line in lines:
-    data = json.loads(line)
-    data["task_description"]["description"] = data["task_description"]["description"].replace("Python", "Go")
-    changed_data.append(data)
+# print(lines[0])
+# changed_data = []
+# for line in lines:
+#     data = json.loads(line)
+#     data["task_description"]["description"] = data["task_description"]["description"].replace("Python", "Go")
+#     changed_data.append(data)
 
-with open(f'dataset/go-seccode.json', 'w', encoding='utf-8') as f:
-    json.dump(changed_data, f, ensure_ascii=False, indent=4)
+# with open(f'dataset/go-seccode.json', 'w', encoding='utf-8') as f:
+#     json.dump(changed_data, f, ensure_ascii=False, indent=4)
 # language_set = set()
 # inst_list = list()
 

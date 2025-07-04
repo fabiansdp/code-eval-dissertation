@@ -6,3 +6,5 @@ go-llmseceval
 seccode
 secure-llmseceval-samples
 temp_eval
+.env
+logs

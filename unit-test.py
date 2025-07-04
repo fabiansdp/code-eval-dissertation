@@ -1,42 +1,64 @@
 import json
-from ollama import generate
-from pathlib import Path
 
-def construct_prompt(row, setup):
-    return f"""Function Name: {row["function_name"]}
+# Buat nambahin hasil prompt
+# def main():
+#     lines = []
+#     with open("dataset/batch_output_setup.jsonl", "rb") as f:
+#         lines = [line.rstrip() for line in f]
 
-Prompt for code generation: {row["description"]}
+#     secf_dict = dict()
+#     with open("dataset/seccode-filtered-go.jsonl", "rb") as secf:
+#         for line in secf:
+#             data = json.loads(line.rstrip())
+#             secf_dict[data["id"]] = data
 
-Context (global variables and imported packages): {row["context"]}
+#     for line in lines:
+#         data = json.loads(line)
+#         setup = data["response"]["body"]["output"][1]["content"][0]["text"].replace("```go","")
+#         setup = setup.replace("```","")
+#         secf_dict[data["custom_id"]]["unittest"]["setup"] = setup
 
-Arguments: {row["arguments"]}
+#     output = []
+#     for x in secf_dict:
+#         output.append(secf_dict[x])
 
-Return: {row["return"]}
+#     with open("dataset/seccode-filtered-go-v2.jsonl", "w") as fp:
+#         for item in output:
+#             fp.write(json.dumps(item) + "\n")
 
-Raise: {row["raise"]}
+def main():
+    lines = []
+    with open("dataset/batch_go_test.jsonl", "rb") as f:
+        lines = [line.rstrip() for line in f]
 
-Security policy: {row["security_policy"]}
+    secf_dict = dict()
+    output_tc = []
+    with open("dataset/seccode-filtered-go.jsonl", "rb") as secf:
+        for line in secf:
+            data = json.loads(line.rstrip())
+            if data["unittest"]["testcases"] == "":
+                secf_dict[data["id"]] = data
+            else:
+                output_tc.append(data)
 
-Setup Code:
-```python
-{setup["setup"]}
-```
+    for line in lines:
+        data = json.loads(line)
+        setup = data["response"]["body"]["output"][1]["content"][0]["text"].replace("```go","")
+        setup = setup.replace("```","")
+        if data["custom_id"] in secf_dict:
+            secf_dict[data["custom_id"]]["unittest"]["setup"] = setup
 
-The function has already been implemented, but please create unit tests according to these specifications, Output the code in a markdown code block, i.e., between triple backticks (```) with the language specified as Python. No need to create the {row["function_name"]} function, just the unit tests.
-    """
+    output_gpt = []
+    for x in secf_dict:
+        output_gpt.append(secf_dict[x])
 
-with open("dataset/seccode.json") as file:
-    lines = [line.rstrip() for line in file]
+    with open("dataset/seccode-go-gpt.jsonl", "w") as fp:
+        for item in output_gpt:
+            fp.write(json.dumps(item) + "\n")
 
-idx = 0
-for line in lines:
-    data = json.loads(line)
-    Path(f'seccode/py/{data["task_description"]["function_name"]}').mkdir(parents=True, exist_ok=True)
+    with open("dataset/seccode-go-tc.jsonl", "w") as fp:
+        for item in output_tc:
+            fp.write(json.dumps(item) + "\n")
 
-    prompt = construct_prompt(data["task_description"], data["unittest"]) 
-    response = generate(model='gemma3:1b', prompt=prompt)
-    s = response.response.replace("```python", "")
-    s = s.replace("```", "")
-    f = open( f'seccode/py/{data["task_description"]["function_name"]}/test.py', 'w' )
-    f.write(s)
-    break
+if __name__ == "__main__":
+    main()

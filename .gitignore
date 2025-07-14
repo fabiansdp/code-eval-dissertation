@@ -8,3 +8,5 @@ secure-llmseceval-samples
 temp_eval
 .env
 logs
+/results
+/eval

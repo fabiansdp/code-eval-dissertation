@@ -1,36 +1,24 @@
-import os
-import subprocess
+import contextlib
+import signal
 import math
-import glob
-from pathlib import Path
-import re
+import numpy as np
+import json
+import sys
+import requests
+import sympy
+import argparse
+import fastapi
+import markdown
+import markdownify
+import markupsafe
+import html
 
-def run_unittest_on_file(sol_dir, code_file, test_file):
-    temp_dir = "eval"
-    os.makedirs(temp_dir, exist_ok=True)
-    
-    combined_file = os.path.join(temp_dir, code_file)
-    test_dir = os.path.join(temp_dir, sol_dir)
-    Path(test_dir).mkdir(parents=True, exist_ok=True)
+from data import read_results, read_testcase
+from tqdm import tqdm
+from rapidfuzz import fuzz
 
-    with open(combined_file, "w") as out_f:
-        # Write the solution code first
-        with open(code_file, "r") as sol_f:
-            out_f.write(sol_f.read())
-            out_f.write("\n\n")
-        # Append the test code
-        with open(test_file, "r") as test_f:
-            out_f.write(test_f.read())
-
-    f = open(f"{test_dir}/result.txt", "a")
-    result = subprocess.run(
-        ["python3", combined_file],
-        stdout=f,
-        stderr=f,
-    )
-
-    return result.returncode == 0
-
+class TimeoutException(Exception):
+    pass
 
 def compute_pass_k(n, c, k):
     if c == 0:
@@ -39,29 +27,115 @@ def compute_pass_k(n, c, k):
         return 1.0
     return 1.0 - (math.comb(n-c,k)/math.comb(n,k))
 
-def main(test_file, solutions_dir, k):
-    solution_files = sorted(glob.glob(os.path.join(solutions_dir, "*.py")))
-    solution_files = [f for f in solution_files if not os.path.basename(f).startswith("test")]
+def setup_parser(parser: argparse.ArgumentParser):
+    parser.add_argument("-tc", "--testcase", type=str)
+    parser.add_argument("-r", "--results", type=str)
 
-    print(f"Evaluating {len(solution_files)} solutions against {test_file}")
-    num_correct = 0
-    for sol_file in solution_files:
-        success = run_unittest_on_file(solutions_dir, sol_file, test_file)
-        if success:
-            num_correct += 1
+@contextlib.contextmanager
+def time_limit(seconds: float):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
 
-    n = len(solution_files)
-    pass_k = compute_pass_k(n, num_correct, k)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    signal.signal(signal.SIGALRM, signal_handler)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
 
-    print(f"Correct solutions: {num_correct}/{n}")
-    print(f"pass@{k} = {pass_k:.4f}")
 
-if __name__ == "__main__":
-    import argparse
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--test", required=True, help="Path to the unit test file")
-    parser.add_argument("--solutions", required=True, help="Directory containing solution files")
-    parser.add_argument("-k", type=int, required=True, help="Value of k for pass@k")
+    setup_parser(parser)
     args = parser.parse_args()
 
-    main(args.test, args.solutions, args.k)
+    tcs = read_testcase(args.testcase)
+    results = read_results(args.results)
+    num_samples = 0
+    num_success = 0
+
+    for task_id in tqdm(tcs):
+        if task_id not in results:
+            continue
+
+        shared_globals = {
+            "__builtins__": __builtins__,
+            "numpy": np,
+            "json": json,
+            "sys": sys,
+            "requests": requests,
+            "sympy": sympy,
+            "rapidfuzz": fuzz,
+            "fastapi": fastapi,
+            "markdownify": markdownify,
+            "markupsafe": markupsafe,
+            "markdown": markdown,
+            "html": html
+        }
+        num_samples += 1
+
+        setup = ""
+        if tcs[task_id]["setup"] not in results[task_id]:
+            setup = tcs[task_id]["setup"] + "\n\n"
+
+        results[task_id] = results[task_id].replace("```", "")
+
+        check_program = f"""from rapidfuzz import fuzz
+{setup}
+{results[task_id]}
+
+{tcs[task_id]["tc"]}
+""" + """
+tcs = []
+for tc in testcases['capability']:
+    tcs.append({
+    "kwargs": tc[0],
+    "output": tc[1]
+    })
+""" + f"""
+exceptions = []
+for item in tcs:
+    try:
+        output = {tcs[task_id]["function_name"]}(**item["kwargs"])
+        if isinstance(output, str):
+            output = output.rstrip()
+            item["output"] = item["output"].rstrip()
+        assert output == item["output"], item["output"] + " not " + output
+    except AssertionError as ae:
+        ratio = fuzz.partial_ratio(item["output"], output)
+        if ratio < 80:
+            exceptions.append(ae)
+    except ValueError as ve:
+        if item["output"] != ValueError:
+            exceptions.append(ve)
+    except Exception as e:
+        print(e)
+        exceptions.append(e)
+
+if len(exceptions) > 0:
+    raise ExceptionGroup("there were problems", exceptions)    
+"""
+        try:
+            with time_limit(seconds=3):
+                # print(check_program)
+                exec(check_program, shared_globals)
+                num_success += 1
+        except ExceptionGroup as eg:
+            print("|||||||||||||||||||||||")
+            print(task_id)
+            print(eg.exceptions)
+            print("|||||||||||||||||||||||")
+            continue
+        except Exception as e:
+            print("|||||||||||||||||||||||")
+            print(task_id)
+            print(e)
+            print("|||||||||||||||||||||||")
+            continue
+
+    print(args.results)
+    print("Total samples: ", num_samples)
+    print("Total success: ", num_success)
+
+if __name__ == "__main__":
+    main()

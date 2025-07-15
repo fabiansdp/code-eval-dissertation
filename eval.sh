@@ -1,0 +1,3 @@
+python3 evaluation.py -tc dataset/seccode-py-tc.jsonl -r results/py-qwen.jsonl -o eval/py-qwen.jsonl > eval/py-qwen.txt
+python3 evaluation.py -tc dataset/seccode-py-tc.jsonl -r results/py-codellama-7b.jsonl -o eval/py-codellama.jsonl > eval/py-codellama.txt
+python3 evaluation.py -tc dataset/seccode-py-tc.jsonl -r results/py-deepseekcoder-7b.jsonl -o eval/py-deepseekcoder.jsonl > eval/py-deepseekcoder.txt

@@ -48,12 +48,16 @@ def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
 def extract_first_code_block(text):
     # Match the first ```python ... ``` block
     match = re.search(r"```python\n(.*?)\n```", text, re.DOTALL)
-    match2 = re.search(r"```\n(.*?)\n```", text, re.DOTALL)
+    match2 = re.search(r"```go\n(.*?)\n```", text, re.DOTALL)
+    match3 = re.search(r"```\n(.*?)\n```", text, re.DOTALL)
     if match:
         return match.group(1)
     
     if match2:
         return match2.group(1)
+    
+    if match3:
+        return match3.group(1)
     
     return text
 

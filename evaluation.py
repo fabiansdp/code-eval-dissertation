@@ -6,60 +6,12 @@ import argparse
 
 import numpy as np
 import tqdm
+import subprocess
 
 from data import read_results, read_testcase, stream_jsonl, write_jsonl
 from execution import check_correctness
-
-HELPER_IMPORTS = {
-    "python": [
-        "import math",
-        "import numpy",
-        "import numpy as np",
-        "import pandas",
-        "import pandas as pd",
-        "import sys",
-        "import os",
-        "import re",
-        "import random",
-        "import time",
-        "import datetime",
-        "import itertools",
-        "import functools",
-        "import string",
-        "import hashlib",
-        "from collections import *",
-        "from typing import *"
-    ],
-    "java": [
-        "import java.util.*;",
-        "import java.io.*;",
-        "import java.math.*;",
-        "import java.time.*;",
-        "import java.util.stream.*;",
-        "import java.util.function.*;",
-        "import java.util.regex.*;",
-        "import java.text.*;",
-    ],
-    "cpp": [
-        "#include <iostream>",
-        "#include <vector>",
-        "#include <string>",
-        "#include <algorithm>",
-        "#include <cmath>",
-        "#include <ctime>",
-        "#include <cstdlib>",
-        "#include <map>",
-        "#include <set>",
-        "#include <queue>",
-        "#include <stack>",
-        "#include <unordered_map>",
-        "#include <unordered_set>",
-        "#include <numeric>",
-        "#include <functional>",
-        "#include <regex>",
-        "using namespace std;",
-    ]
-}
+from gotester import generate_go_tests, extract_return_types, insert_import, cd
+from pathlib import Path
 
 
 def estimate_pass_at_k(
@@ -88,40 +40,15 @@ def estimate_pass_at_k(
     return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)])
 
 
-def evaluate_functional_correctness(
-    sample_file: str,
-    testcase: str,
-    out_file: str,
-    k: List[int] = [1, 10, 100],
-    n_workers: int = 4,
-    timeout: float = 3.0,
-    language: str = "python"
+def create_test_code(
+    setup: str, 
+    result: str, 
+    test: str, 
+    function_name: str, 
+    language: str
 ):
-    tcs = read_testcase(testcase)
-    samples = read_results(sample_file)
-
-    # Check the generated samples against test suites.
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-
-        futures = []
-        completion_id = Counter()
-        n_samples = 0
-        results = defaultdict(list)
-
-        print("Reading samples...")
-        for task_id in tqdm.tqdm(tcs):
-            if task_id not in samples:
-                continue
-        
-            setup = ""
-            if tcs[task_id]["setup"] not in samples[task_id]:
-                setup = tcs[task_id]["setup"] + "\n\n"
-
-            result = samples[task_id]
-            test = tcs[task_id]["tc"]
-            function_name = tcs[task_id]["function_name"]
-
-            check_program = f"""from rapidfuzz import fuzz
+    if language == "python":
+        return f"""from rapidfuzz import fuzz
 {setup}
 {result}
 
@@ -156,6 +83,60 @@ for item in tcs:
 if len(exceptions) > 0:
     raise ExceptionGroup("there were problems", exceptions)    
 """
+    
+    if language == "go":
+        return f"""{setup}
+{result}
+
+{test}
+"""
+
+def evaluate_functional_correctness(
+    sample_file: str,
+    testcase: str,
+    out_file: str,
+    k: List[int] = [1, 10, 100],
+    n_workers: int = 4,
+    timeout: float = 3.0,
+    language: str = "python"
+):
+    tcs = read_testcase(testcase)
+    samples = read_results(sample_file)
+
+    # Check the generated samples against test suites.
+    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+
+        futures = []
+        completion_id = Counter()
+        n_samples = 0
+        results = defaultdict(list)
+
+        print("Reading samples...")
+        index = 0
+        for task_id in tqdm.tqdm(tcs):
+            if task_id not in samples:
+                continue
+        
+            setup = ""
+            # if tcs[task_id]["setup"] not in samples[task_id]:
+            #     setup = tcs[task_id]["setup"] + "\n\n"
+
+            result = samples[task_id]
+            test = tcs[task_id]["tc"]
+            function_name = tcs[task_id]["function_name"]
+
+
+            if language == "go":
+                if f"func {function_name}" not in result:
+                    print("Mismatched function name: ", function_name)
+                    continue
+                
+                returns = extract_return_types(result, function_name)
+                test = generate_go_tests(test, function_name, returns)
+                if "package main" not in samples[task_id]:
+                    setup = tcs[task_id]["setup"] + "\n\n"
+
+            check_program = create_test_code(setup=setup, result=result, test=test, function_name=function_name, language=language)
 
             args = {
                 "sample": {
@@ -171,6 +152,7 @@ if len(exceptions) > 0:
             futures.append(future)
             completion_id[task_id] += 1
             n_samples += 1
+            index += 1
 
         print("Running test suites...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
@@ -222,13 +204,89 @@ def setup_parser(parser: argparse.ArgumentParser):
     parser.add_argument("-tc", "--testcase", type=str)
     parser.add_argument("-r", "--results", type=str)
     parser.add_argument("-o", "--output", type=str)
+    parser.add_argument("-l", "--language", type=str, default="python")
 
 def main():
     parser = argparse.ArgumentParser()
     setup_parser(parser)
     args = parser.parse_args()
-    results = evaluate_functional_correctness(sample_file=args.results, testcase=args.testcase, out_file=args.output)
+    results = evaluate_functional_correctness(sample_file=args.results, testcase=args.testcase, out_file=args.output, language=args.language, timeout=60)
     print(results)
+
+# def main():
+#     tcs = read_testcase("dataset/seccode-go-tc.jsonl")
+#     samples = read_results("results/go-deepseekcoder-7b.jsonl")
+    
+#     for task_id in tcs:
+#         if task_id not in samples:
+#             continue
+
+#         setup = ""
+#         if "package main" not in samples[task_id]:
+#             setup = tcs[task_id]["setup"] + "\n\n"
+
+#         result = samples[task_id]
+#         test = tcs[task_id]["tc"]
+#         function_name = tcs[task_id]["function_name"]
+
+#         if f"func {function_name}" not in result:
+#             print("Mismatched function name: ", function_name)
+#             # print("Salah goblok nama fungsinya")
+#             # print(function_name)
+#             # print(result)
+#             continue
+
+#         returns = extract_return_types(result, function_name)
+#         tc = generate_go_tests(test, function_name, returns)
+
+#         check_program = create_test_code(setup=setup, result=result, test=tc, function_name=function_name, language="go")
+#         check_program = insert_import(check_program, "testing")
+#         check_program = insert_import(check_program, "github.com/stretchr/testify/assert")
+#         go_dir = f"go-eval/{task_id}"
+#         go_file_name = f"{go_dir}/code_test.go"
+#         Path(go_dir).mkdir(parents=True, exist_ok=True)
+
+#         with open(f"{go_dir}/go.mod", "w") as go_mod:
+#             go_mod.write("""module test.com
+
+# go 1.24.4
+
+# require github.com/stretchr/testify v1.10.0
+
+# require (
+# 	github.com/davecgh/go-spew v1.1.1 // indirect
+# 	github.com/pmezard/go-difflib v1.0.0 // indirect
+# 	gopkg.in/yaml.v3 v3.0.1 // indirect
+# )
+# """)
+
+#         with open(f"{go_dir}/go.sum", 'w') as go_sum:
+#             go_sum.write("""github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+# github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+# github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+# github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+# github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
+# github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
+# gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+# gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+# gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+# gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+# """) 
+            
+#         with open(go_file_name, 'w') as go_file:
+#             go_file.write(check_program) 
+
+#         # enter the directory like this:
+#         with cd(f"{go_dir}"):
+#             subprocess.run("go mod tidy")
+#             subprocess.run("gopls codeaction -exec -w code_test.go")
+#             compile_res = subprocess.run("go test", check=False, capture_output=True, text=True)
+#             if compile_res.returncode != 0:
+#                 print(compile_res.stdout)
+#                 print(compile_res.stderr.strip())
+#             else:
+#                 print(compile_res.stdout)
+#         break
 
 if __name__ == "__main__":
     main()

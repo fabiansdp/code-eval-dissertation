@@ -33,7 +33,7 @@ def main():
 
     secf_dict = dict()
     output_tc = []
-    with open("dataset/seccode-filtered-go.jsonl", "rb") as secf:
+    with open("dataset/seccode-go-filtered-v2.jsonl", "rb") as secf:
         for line in secf:
             data = json.loads(line.rstrip())
             if data["unittest"]["testcases"] == "":

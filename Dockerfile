@@ -2,7 +2,7 @@
 FROM ubuntu:latest 
 
 # installing make, git, gcc
-RUN apt-get update && apt-get install -y make git curl tar
+RUN apt-get update && apt-get install -y make git curl tar python3-pip
 RUN apt-get update -y \
     && apt-get upgrade -y \
     && apt-get -y install build-essential \
@@ -23,15 +23,16 @@ RUN cd /usr/src \
     && cd Python-3.11.9 \
     && ./configure --enable-optimizations \
     && make altinstall
+    
 # Download and extract CodeQL
-# RUN curl -L https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.22.1/codeql-bundle-linux64.tar.gz | tar -xz -C /opt/ && \
-#     ln -s /opt/codeql /usr/local/bin/codeql
+RUN curl -L https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.22.1/codeql-bundle-linux64.tar.gz | tar -xz -C /opt/ && \
+    ln -s /opt/codeql /usr/local/bin/codeql
+# RUN curl -L https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.22.1/codeql-bundle-linux64.tar.gz | tar -xz -C /opt/
 
 # Set PATH (optional if you're using the symlink)
-# ENV PATH="/opt/codeql:$PATH"
+ENV PATH="/opt/codeql:$PATH"
 
 WORKDIR /app
-
 
 COPY requirements.txt /app
 

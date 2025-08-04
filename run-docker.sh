@@ -1,1 +1,1 @@
-docker run -it --mount type=bind,src="/$(pwd)",target=/app ubuntu bash
+docker run -it --rm --mount type=bind,src="/$(pwd)",target=/app ubuntu bash

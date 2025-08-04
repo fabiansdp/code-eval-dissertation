@@ -1,5 +1,5 @@
 env
-token.txt
+*.txt
 __pycache__
 dataset
 go-llmseceval
@@ -10,3 +10,4 @@ temp_eval
 logs
 /results
 /eval
+codeql

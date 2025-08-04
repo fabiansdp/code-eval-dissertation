@@ -125,7 +125,6 @@ def evaluate_functional_correctness(
             test = tcs[task_id]["tc"]
             function_name = tcs[task_id]["function_name"]
 
-
             if language == "go":
                 if f"func {function_name}" not in result:
                     print("Mismatched function name: ", function_name)
@@ -158,6 +157,8 @@ def evaluate_functional_correctness(
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             result = future.result()
             results[result["task_id"]].append((result["completion_id"], result))
+
+        print(results)
 
     # Calculate pass@k.
     total, correct = [], []
@@ -212,81 +213,6 @@ def main():
     args = parser.parse_args()
     results = evaluate_functional_correctness(sample_file=args.results, testcase=args.testcase, out_file=args.output, language=args.language, timeout=60)
     print(results)
-
-# def main():
-#     tcs = read_testcase("dataset/seccode-go-tc.jsonl")
-#     samples = read_results("results/go-deepseekcoder-7b.jsonl")
-    
-#     for task_id in tcs:
-#         if task_id not in samples:
-#             continue
-
-#         setup = ""
-#         if "package main" not in samples[task_id]:
-#             setup = tcs[task_id]["setup"] + "\n\n"
-
-#         result = samples[task_id]
-#         test = tcs[task_id]["tc"]
-#         function_name = tcs[task_id]["function_name"]
-
-#         if f"func {function_name}" not in result:
-#             print("Mismatched function name: ", function_name)
-#             # print("Salah goblok nama fungsinya")
-#             # print(function_name)
-#             # print(result)
-#             continue
-
-#         returns = extract_return_types(result, function_name)
-#         tc = generate_go_tests(test, function_name, returns)
-
-#         check_program = create_test_code(setup=setup, result=result, test=tc, function_name=function_name, language="go")
-#         check_program = insert_import(check_program, "testing")
-#         check_program = insert_import(check_program, "github.com/stretchr/testify/assert")
-#         go_dir = f"go-eval/{task_id}"
-#         go_file_name = f"{go_dir}/code_test.go"
-#         Path(go_dir).mkdir(parents=True, exist_ok=True)
-
-#         with open(f"{go_dir}/go.mod", "w") as go_mod:
-#             go_mod.write("""module test.com
-
-# go 1.24.4
-
-# require github.com/stretchr/testify v1.10.0
-
-# require (
-# 	github.com/davecgh/go-spew v1.1.1 // indirect
-# 	github.com/pmezard/go-difflib v1.0.0 // indirect
-# 	gopkg.in/yaml.v3 v3.0.1 // indirect
-# )
-# """)
-
-#         with open(f"{go_dir}/go.sum", 'w') as go_sum:
-#             go_sum.write("""github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
-# github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-# github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
-# github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-# github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=
-# github.com/stretchr/testify v1.10.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
-# gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
-# gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
-# gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
-# gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
-# """) 
-            
-#         with open(go_file_name, 'w') as go_file:
-#             go_file.write(check_program) 
-
-#         # enter the directory like this:
-#         with cd(f"{go_dir}"):
-#             subprocess.run("go mod tidy")
-#             subprocess.run("gopls codeaction -exec -w code_test.go")
-#             compile_res = subprocess.run("go test", check=False, capture_output=True, text=True)
-#             if compile_res.returncode != 0:
-#                 print(compile_res.stdout)
-#                 print(compile_res.stderr.strip())
-#             else:
-#                 print(compile_res.stdout)
-#         break
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,3 @@
+# python3 inference.py --model Qwen/Qwen2.5-Coder-7B-Instruct --source dataset/prompts-py-v2.jsonl --output new-results/py-qwen
+python3 inference.py --model Qwen/Qwen2.5-Coder-7B-Instruct --source dataset/prompts-go-v2.jsonl --output new-results/go-qwen
+# python3 inference.py --model deepseek-ai/deepseek-coder-7b-instruct-v1.5 --source dataset/prompts-py-v2.jsonl --output results/py-deepseekcoder-7b-v3

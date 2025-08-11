@@ -68,7 +68,7 @@ def unsafe_execute(sample, language, timeout, result):
             except TimeoutException:
                 result.append("timed out")
             except ExceptionGroup as e:
-                result.append(e)
+                result.append(e.exceptions)
             except Exception as e:
                 result.append(e)
 
@@ -125,29 +125,6 @@ gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
                 else:
                     result.append(f"output: {exec_res.stdout.strip()}, failed: {exec_res.stderr.strip()}")
 
-        elif language == "cpp":
-            cpp_file_name = f"{unique_id}.cpp"
-            executable = f"./{unique_id}"
-            with open(cpp_file_name, 'w') as cpp_file:
-                cpp_file.write("")
-            
-            try:
-                compile_command = ["g++", cpp_file_name, "-o", unique_id]
-                compile_res = subprocess.run(compile_command, check=False, timeout=timeout, capture_output=True, text=True)
-                if compile_res.returncode != 0:
-                    result.append(f"failed to compile: {compile_res.stderr.strip()}")
-                else:
-                    run_command = [executable]
-                    exec_res = subprocess.run(run_command, check=False, timeout=timeout, capture_output=True, text=True)
-                    if exec_res.returncode == 0:
-                        result.append("passed")
-                    else:
-                        result.append(f"failed: {exec_res.stderr.strip()}")
-            except subprocess.TimeoutExpired:
-                result.append("timed out")
-            except Exception as e:
-                result.append(f"failed: {str(e)}")
-
         else:
             result.append(f"failed: Unsupported language {language}")
 
@@ -175,6 +152,7 @@ def check_correctness(sample: Dict, language: str, timeout: float = 5.0,
         result.append("timed out")
 
     output = {
+        "sample": sample,
         "passed": result[0] == "passed",
         "result": result[0],
         "completion_id": completion_id

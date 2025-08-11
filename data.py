@@ -93,7 +93,10 @@ def read_testcase(filename: str):
 def read_results(filename: str):
     output = dict()
     for x in stream_jsonl(filename):
-        output[x["id"]] = remove_markdown(x["generated_text"])
+        codes = []
+        for item in x["samples"]:
+            codes.append(remove_markdown(item["text"]))
+        output[x["id"]] = codes
 
     return output
 

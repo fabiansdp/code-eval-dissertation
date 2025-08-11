@@ -55,7 +55,7 @@ def create_test_code(
 {test}
 """ + """
 tcs = []
-for tc in testcases['capability']:
+for tc in testcases:
     tcs.append({
     "kwargs": tc[0],
     "output": tc[1]
@@ -64,21 +64,25 @@ for tc in testcases['capability']:
 exceptions = []
 for item in tcs:
     try:
-        output = {function_name}(**item["kwargs"])
+        output = compute_hmac(**item["kwargs"])
         if isinstance(output, str):
             output = output.rstrip()
             item["output"] = item["output"].rstrip()
-        assert output == item["output"], item["output"] + " not " + output
+
+        assert output == item["output"]
     except AssertionError as ae:
-        ratio = fuzz.partial_ratio(item["output"], output)
-        if ratio < 80:
+        if isinstance(item["output"], str):
+            ratio = fuzz.partial_ratio(item["output"], output)
+            if ratio < 80:
+                exceptions.append(ae)
+        else:
             exceptions.append(ae)
-    except ValueError as ve:
-        if item["output"] != ValueError:
-            exceptions.append(ve)
+
     except Exception as e:
-        print(e)
-        exceptions.append(e)
+        if type(e) == type(item["output"]):
+            continue
+        else:
+            exceptions.append(e)
 
 if len(exceptions) > 0:
     raise ExceptionGroup("there were problems", exceptions)    
@@ -95,7 +99,7 @@ def evaluate_functional_correctness(
     sample_file: str,
     testcase: str,
     out_file: str,
-    k: List[int] = [1, 10, 100],
+    k: List[int] = [1, 3, 5],
     n_workers: int = 4,
     timeout: float = 3.0,
     language: str = "python"
@@ -103,6 +107,7 @@ def evaluate_functional_correctness(
     tcs = read_testcase(testcase)
     samples = read_results(sample_file)
 
+    print(len(tcs))
     # Check the generated samples against test suites.
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
 
@@ -112,53 +117,59 @@ def evaluate_functional_correctness(
         results = defaultdict(list)
 
         print("Reading samples...")
-        index = 0
         for task_id in tqdm.tqdm(tcs):
             if task_id not in samples:
                 continue
-        
-            setup = ""
-            # if tcs[task_id]["setup"] not in samples[task_id]:
-            #     setup = tcs[task_id]["setup"] + "\n\n"
 
-            result = samples[task_id]
-            test = tcs[task_id]["tc"]
-            function_name = tcs[task_id]["function_name"]
-
-            if language == "go":
-                if f"func {function_name}" not in result:
-                    print("Mismatched function name: ", function_name)
-                    continue
-                
-                returns = extract_return_types(result, function_name)
-                test = generate_go_tests(test, function_name, returns)
-                if "package main" not in samples[task_id]:
+            for sample in samples[task_id]:
+                setup = ""
+                if tcs[task_id]["setup"] not in sample:
                     setup = tcs[task_id]["setup"] + "\n\n"
 
-            check_program = create_test_code(setup=setup, result=result, test=test, function_name=function_name, language=language)
+                result = sample
+                test = tcs[task_id]["tc"]
+                function_name = tcs[task_id]["function_name"]
 
-            args = {
-                "sample": {
-                    "task_id": task_id,
-                    "test_code": check_program
-                },
-                "language": language,
-                "timeout": timeout,
-                "completion_id": completion_id[task_id]
-            }
+                if language == "go":
+                    if f"func {function_name}" not in result:
+                        print("Mismatched function name: ", function_name)
+                        continue
+                    
+                    returns = extract_return_types(result, function_name)
+                    test = generate_go_tests(test, function_name, returns)
+                    if "package main" not in sample:
+                        setup = tcs[task_id]["setup"] + "\n\n"
 
-            future = executor.submit(check_correctness, **args)
-            futures.append(future)
-            completion_id[task_id] += 1
-            n_samples += 1
-            index += 1
+                check_program = create_test_code(setup=setup, result=result, test=test, function_name=function_name, language=language)
 
+                args = {
+                    "sample": {
+                        "task_id": task_id,
+                        "test_code": check_program
+                    },
+                    "language": language,
+                    "timeout": timeout,
+                    "completion_id": completion_id[task_id]
+                }
+
+                future = executor.submit(check_correctness, **args)
+                futures.append(future)
+                completion_id[task_id] += 1
+                n_samples += 1
+
+            break
+        
+        temp = ""
         print("Running test suites...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             result = future.result()
+            temp = result["task_id"]
             results[result["task_id"]].append((result["completion_id"], result))
 
-        print(results)
+        # print(results[temp][0][1])
+        for i in range (len(results[temp])):
+            print(results[temp][i][1]["sample"]["test_code"])
+            print(str(results[temp][i][1]["result"]))
 
     # Calculate pass@k.
     total, correct = [], []
@@ -193,7 +204,7 @@ def evaluate_functional_correctness(
             yield sample
 
     print(f"Writing results to {out_file}...")
-    write_jsonl(out_file, tqdm.tqdm(combine_results(), total=n_samples))
+    write_jsonl(out_file, tqdm.tqdm(combine_results()))
 
     return {
         "pass_at_k": pass_at_k,

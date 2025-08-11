@@ -11,3 +11,6 @@ logs
 /results
 /eval
 codeql
+/codeql-results
+/new-results
+/new-eval

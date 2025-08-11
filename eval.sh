@@ -1,2 +1,2 @@
 # python3 evaluation.py -tc dataset/seccode-go-tc.jsonl -r results/go-deepseekcoder-7b.jsonl -o eval/go-deepseekcoder.jsonl -l go > eval/go-deepseekcoder.txt
-python3 evaluation.py -tc dataset/seccode-go-tc.jsonl -r results/go-qwen3.jsonl -o eval/test.jsonl -l go > eval/test.txt
+python3 evaluation.py -tc dataset/correct.jsonl -r new-results/py-qwen-1.0.jsonl -o new-eval/test.jsonl > new-eval/test.txt

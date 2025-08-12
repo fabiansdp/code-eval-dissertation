@@ -260,4 +260,26 @@ class cd:
     def __exit__(self, etype, value, traceback):
         os.chdir(self.savedPath)
 
+
+def clean_go_package_declaration(go_code: str) -> str:
+    """
+    Removes any 'package <name>' declaration from Go code
+    and ensures exactly one 'package main' at the top.
+    """
+    lines = go_code.splitlines()
+
+    # Remove all lines starting with 'package ' (any package name)
+    filtered_lines = [
+        line for line in lines
+        if not re.match(r'^\s*package\s+\w+', line)
+    ]
+
+    # Prepend a single 'package main'
+    cleaned_code = ["package main"] + filtered_lines
+
+    # Remove possible leading empty lines after reinsertion
+    while len(cleaned_code) > 1 and cleaned_code[1].strip() == "":
+        cleaned_code.pop(1)
+
+    return "\n".join(cleaned_code)
 # main()

@@ -10,7 +10,7 @@ import subprocess
 
 from data import read_results, read_testcase, stream_jsonl, write_jsonl
 from execution import check_correctness
-from gotester import generate_go_tests, extract_return_types, insert_import, cd
+from gotester import generate_go_tests, extract_return_types, insert_import, cd, clean_go_package_declaration
 from pathlib import Path
 
 
@@ -64,7 +64,7 @@ for tc in testcases:
 exceptions = []
 for item in tcs:
     try:
-        output = compute_hmac(**item["kwargs"])
+        output = {function_name}(**item["kwargs"])
         if isinstance(output, str):
             output = output.rstrip()
             item["output"] = item["output"].rstrip()
@@ -123,30 +123,31 @@ def evaluate_functional_correctness(
 
             for sample in samples[task_id]:
                 setup = ""
-                if tcs[task_id]["setup"] not in sample:
-                    setup = tcs[task_id]["setup"] + "\n\n"
+                if language == "python":
+                    if tcs[task_id]["setup"] not in sample:
+                        setup = tcs[task_id]["setup"] + "\n\n"
 
                 result = sample
                 test = tcs[task_id]["tc"]
+                print(test)
                 function_name = tcs[task_id]["function_name"]
 
                 if language == "go":
-                    if f"func {function_name}" not in result:
-                        print("Mismatched function name: ", function_name)
-                        continue
-                    
                     returns = extract_return_types(result, function_name)
                     test = generate_go_tests(test, function_name, returns)
                     if "package main" not in sample:
                         setup = tcs[task_id]["setup"] + "\n\n"
 
                 check_program = create_test_code(setup=setup, result=result, test=test, function_name=function_name, language=language)
+                if language == "go":
+                    check_program = clean_go_package_declaration(check_program)
 
                 args = {
                     "sample": {
                         "task_id": task_id,
                         "test_code": check_program
                     },
+                    "is_func_correct": True if f"{function_name}" in result else False,
                     "language": language,
                     "timeout": timeout,
                     "completion_id": completion_id[task_id]
@@ -163,7 +164,8 @@ def evaluate_functional_correctness(
         print("Running test suites...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
             result = future.result()
-            temp = result["task_id"]
+            print(result)
+            # temp = result["task_id"]
             results[result["task_id"]].append((result["completion_id"], result))
 
         # print(results[temp][0][1])

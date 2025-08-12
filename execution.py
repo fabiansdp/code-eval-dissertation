@@ -59,7 +59,7 @@ def unsafe_execute(sample, language, timeout, result):
             chdir = os.chdir
 
             reliability_guard()
-            
+
             try:
                 with swallow_io():
                     with time_limit(timeout):
@@ -128,7 +128,9 @@ gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
         else:
             result.append(f"failed: Unsupported language {language}")
 
-def check_correctness(sample: Dict, language: str, timeout: float = 5.0,
+def check_correctness(sample: Dict, 
+                      is_func_correct: bool,
+                      language: str, timeout: float = 5.0,
                       completion_id: Optional[int] = None) -> Dict:
     """
     Evaluates the functional correctness of a completion by running the test
@@ -139,6 +141,16 @@ def check_correctness(sample: Dict, language: str, timeout: float = 5.0,
     :param timeout: Time limit for execution (default 5 seconds).
     :param completion_id: An optional completion ID for result matching.
     """
+    if not is_func_correct:
+        return {
+            # "sample": sample,
+            "task_id": sample["task_id"],
+            "passed": False,
+            "result": "Mismatched function name",
+            "completion_id": completion_id
+        }
+
+
     manager = multiprocessing.Manager()
     result = manager.list()
 

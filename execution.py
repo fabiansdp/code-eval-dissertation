@@ -1,7 +1,8 @@
 from typing import Optional, Dict
 from gotester import insert_import, cd
-from pathlib import Path
+from pathlib import Path, PosixPath
 
+import re
 import ast
 import contextlib
 import faulthandler
@@ -32,9 +33,29 @@ import markdown
 import markdownify
 import markupsafe
 import html
+import hashlib
+import hmac
+import sympy as sp
+from urllib.parse import ParseResult
 
 from rapidfuzz import fuzz
 from ctx import create_tempdir, reliability_guard, swallow_io, time_limit, TimeoutException
+
+def get_tcs(data: str) -> list:
+    test_code = f"""{data}""" + """
+tcs = []
+for tc in testcases:
+    tcs.append({
+        "kwargs": tc[0],
+        "output": tc[1]
+    })
+"""
+    try:
+        exec(test_code, globals())
+    except Exception as e:
+        raise e
+
+    return tcs
 
 def unsafe_execute(sample, language, timeout, result):
     """
@@ -128,7 +149,35 @@ gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
         else:
             result.append(f"failed: Unsupported language {language}")
 
+def create_test_code(sample: Dict, testcases: list) -> list:
+    output = []
+
+    for i in range(len(testcases)):
+        code = f"""{sample['test_code']}
+
+testcases = {testcases}
+try:
+    args = {testcases[i]["kwargs"]}
+    output = {sample['function_name']}(**args)
+    assert output == testcases[{i}]["output"]
+except AssertionError as ae:
+    if isinstance(testcases[{i}]["output"], str):
+        ratio = fuzz.partial_ratio(testcases[{i}]["output"], output)
+        if ratio < 80:
+            raise ae
+    else:
+        raise ae
+
+except Exception as e:
+    if type(e) != type(testcases[{i}]["output"]):
+        raise type(e)(e.message + ' should be ' + type(testcases[{i}]["output"]))
+""" 
+        output.append(code)
+
+    return output
+
 def check_correctness(sample: Dict, 
+                      testcases: str,
                       is_func_correct: bool,
                       language: str, timeout: float = 5.0,
                       completion_id: Optional[int] = None) -> Dict:
@@ -151,26 +200,55 @@ def check_correctness(sample: Dict,
         }
 
 
-    manager = multiprocessing.Manager()
-    result = manager.list()
+    results = []
+    passed_tests = 0
+    total_tests = len(testcases)
+    tcs = create_test_code(sample, testcases)
 
-    p = multiprocessing.Process(target=unsafe_execute, args=(sample, language, timeout, result))
-    p.start()
-    p.join(timeout=timeout + 1)
-    if p.is_alive():
-        p.kill()
+    for i in range(len(tcs)):
+        input_info = {
+            "task_id": sample["task_id"],
+            "test_code": tcs[i]
+        }
 
-    if not result:
-        result.append("timed out")
+        manager = multiprocessing.Manager()
+        result = manager.list()
+        p = multiprocessing.Process(target=unsafe_execute, args=(input_info, language, timeout, result))
+        p.start()
+        p.join(timeout=timeout + 1)
+        if p.is_alive():
+            p.kill()
 
-    output = {
-        "sample": sample,
-        "passed": result[0] == "passed",
-        "result": result[0],
-        "completion_id": completion_id
+        if not result:
+            result.append("timed out")
+
+        is_passed = result[0] == "passed"
+        if is_passed:
+            passed_tests += 1
+
+        output = {
+            "index": i,
+            # "sample": input_info,
+            "passed": is_passed,
+            "result": result[0]
+        }
+        
+        if "task_id" in input_info:
+            output["task_id"] = sample["task_id"]
+
+        results.append(output)
+
+    success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
+
+    return {
+        "task_id": sample["task_id"],
+        "completion_id": completion_id,
+        "results": results,
+        "status": "completed",
+        "passed": True if passed_tests == total_tests else False,
+        "statistics": {
+            "total_tests": total_tests,
+            "passed_tests": passed_tests,
+            "success_rate": round(success_rate, 2)
+        }
     }
-    
-    if "task_id" in sample:
-        output["task_id"] = sample["task_id"]
-
-    return output

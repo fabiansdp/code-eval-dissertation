@@ -9,9 +9,9 @@ import tqdm
 import subprocess
 
 from data import read_results, read_testcase, stream_jsonl, write_jsonl
-from execution import check_correctness
+from execution import check_correctness, get_tcs
 from gotester import generate_go_tests, extract_return_types, insert_import, cd, clean_go_package_declaration
-from pathlib import Path
+from pathlib import Path, PosixPath
 
 
 def estimate_pass_at_k(
@@ -51,42 +51,43 @@ def create_test_code(
         return f"""from rapidfuzz import fuzz
 {setup}
 {result}
-
-{test}
-""" + """
-tcs = []
-for tc in testcases:
-    tcs.append({
-    "kwargs": tc[0],
-    "output": tc[1]
-    })
-""" + f"""
-exceptions = []
-for item in tcs:
-    try:
-        output = {function_name}(**item["kwargs"])
-        if isinstance(output, str):
-            output = output.rstrip()
-            item["output"] = item["output"].rstrip()
-
-        assert output == item["output"]
-    except AssertionError as ae:
-        if isinstance(item["output"], str):
-            ratio = fuzz.partial_ratio(item["output"], output)
-            if ratio < 80:
-                exceptions.append(ae)
-        else:
-            exceptions.append(ae)
-
-    except Exception as e:
-        if type(e) == type(item["output"]):
-            continue
-        else:
-            exceptions.append(e)
-
-if len(exceptions) > 0:
-    raise ExceptionGroup("there were problems", exceptions)    
 """
+# {test}
+    
+# """
+# tcs = []
+# for tc in testcases:
+#     tcs.append({
+#     "kwargs": tc[0],
+#     "output": tc[1]
+#     })
+# """ + f"""
+# """
+# exceptions = []
+# for item in tcs:
+#     try:
+#         output = {function_name}(**item["kwargs"])
+#         if isinstance(output, str):
+#             output = output.rstrip()
+#             item["output"] = item["output"].rstrip()
+
+#         assert output == item["output"]
+#     except AssertionError as ae:
+#         if isinstance(item["output"], str):
+#             ratio = fuzz.partial_ratio(item["output"], output)
+#             if ratio < 80:
+#                 exceptions.append(ae)
+#         else:
+#             exceptions.append(ae)
+
+#     except Exception as e:
+#         if type(e) == type(item["output"]):
+#             continue
+#         else:
+#             exceptions.append(e)
+
+# if len(exceptions) > 0:
+#     raise ExceptionGroup("there were problems", exceptions)    
     
     if language == "go":
         return f"""{setup}
@@ -109,18 +110,19 @@ def evaluate_functional_correctness(
 
     print(len(tcs))
     # Check the generated samples against test suites.
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
 
         futures = []
         completion_id = Counter()
-        n_samples = 0
         results = defaultdict(list)
 
         print("Reading samples...")
+        idx = 0
         for task_id in tqdm.tqdm(tcs):
             if task_id not in samples:
                 continue
-
+            
+            idx+= 1
             for sample in samples[task_id]:
                 setup = ""
                 if language == "python":
@@ -129,7 +131,6 @@ def evaluate_functional_correctness(
 
                 result = sample
                 test = tcs[task_id]["tc"]
-                print(test)
                 function_name = tcs[task_id]["function_name"]
 
                 if language == "go":
@@ -142,11 +143,29 @@ def evaluate_functional_correctness(
                 if language == "go":
                     check_program = clean_go_package_declaration(check_program)
 
+                testcases = []
+                try:
+                    testcases = get_tcs(test)
+                except Exception as e:
+                    print(e, task_id)
+#                     print(f"""{test}""" + """
+# tcs = []
+# for tc in testcases:
+#     tcs.append({
+#         "kwargs": tc[0],
+#         "output": tc[1]
+#     })
+# """)
+#                     print(test)
+                    continue
+
                 args = {
                     "sample": {
                         "task_id": task_id,
-                        "test_code": check_program
+                        "function_name": function_name,
+                        "test_code": check_program,
                     },
+                    "testcases": testcases,
                     "is_func_correct": True if f"{function_name}" in result else False,
                     "language": language,
                     "timeout": timeout,
@@ -156,22 +175,11 @@ def evaluate_functional_correctness(
                 future = executor.submit(check_correctness, **args)
                 futures.append(future)
                 completion_id[task_id] += 1
-                n_samples += 1
 
-            break
-        
-        temp = ""
         print("Running test suites...")
         for future in tqdm.tqdm(as_completed(futures), total=len(futures)):
-            result = future.result()
-            print(result)
-            # temp = result["task_id"]
+            result = future.result(timeout=10)
             results[result["task_id"]].append((result["completion_id"], result))
-
-        # print(results[temp][0][1])
-        for i in range (len(results[temp])):
-            print(results[temp][i][1]["sample"]["test_code"])
-            print(str(results[temp][i][1]["result"]))
 
     # Calculate pass@k.
     total, correct = [], []
@@ -189,29 +197,53 @@ def evaluate_functional_correctness(
 
     # Finally, save the results in one file:
     def combine_results():
-        for sample in stream_jsonl(sample_file):
+        for sample in stream_jsonl(testcase):
             task_id = sample["id"]
             if task_id not in results:
                 continue
 
-            result = results[task_id].pop(0)
-            if type(result[1]["result"]) == ExceptionGroup:
-                sample["result"] = ", ".join([f"{type(e)}: {str(e)}" for e in result[1]["result"].exceptions])
-            elif type(result[1]["result"] == Exception):
-                sample["result"] = str(result[1]["result"])
-            else:
-                sample["result"] = result[1]["result"]
+            for i in range (len(results[task_id])):
+                if "results" not in results[task_id][i][1]:
+                    print("No results key: ", results[task_id][i][1], " ", task_id)
+                    continue
+
+                for j in range (len(results[task_id][i][1]["results"])):
+                    if "result" not in results[task_id][i][1]["results"][j]:
+                        print("No result key: ", results[task_id][i][1]["results"][j], " ", task_id)
+                        continue
+
+                    if isinstance(results[task_id][i][1]["results"][j]["result"], Exception):
+                        results[task_id][i][1]["results"][j]["exception"]= f"{type(results[task_id][i][1]['results'][j]['result'])}"
+                        results[task_id][i][1]["results"][j]["result"]= str(results[task_id][i][1]['results'][j]['result'])
+
+            result_arr = []
+            for item in results[task_id]:
+                if "results" in item[1]:
+                    result_arr.append(item[1]["results"])
             
-            sample["passed"] = result[1]["passed"]
-            yield sample
+            stat_arr = []
+            for item in results[task_id]:
+                if "statistics" in item[1]:
+                    stat_arr.append(item[1]["statistics"])
+            
+            passed_arr = []
+            for item in results[task_id]:
+                if "passed" in item[1]:
+                    passed_arr.append(item[1]["passed"])
+            
+            yield {
+                "task_id": task_id,
+                "cwe_id": sample["CWE_ID"],
+                "results": result_arr,
+                "statistics": stat_arr,
+                "passed": passed_arr,
+            }
 
     print(f"Writing results to {out_file}...")
     write_jsonl(out_file, tqdm.tqdm(combine_results()))
 
     return {
         "pass_at_k": pass_at_k,
-        "num_samples": len(total),
-        "num_success": np.count_nonzero(correct == 1)
     }
 
 def setup_parser(parser: argparse.ArgumentParser):

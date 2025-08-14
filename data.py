@@ -25,7 +25,6 @@ def stream_jsonl(filename: str) -> Iterable[Dict]:
                 if any(not x.isspace() for x in line):
                     yield json.loads(line)
 
-
 def write_jsonl(filename: str, data: Iterable[Dict], append: bool = False):
     """
     Writes an iterable of dictionaries to jsonl

@@ -1,4 +1,9 @@
 import json
+import os
+import sympy as sp
+import hashlib
+import hmac
+import numpy as np
 
 # Buat nambahin hasil prompt
 # def main():
@@ -39,13 +44,27 @@ def main():
             data = json.loads(line.rstrip())
             secf_dict[data["id"]] = data
 
+    new_dict = dict()
     for id in secf_dict:
-        if id in correct_dict and id in secf_dict:
+        if id in correct_dict:
             secf_dict[id]["unittest"]["testcases"] = correct_dict[id]["unittest"]["testcases"]
+            new_dict[id] = secf_dict[id]
+        elif secf_dict[id]["unittest"]["testcases"] != "":
+            try:
+                localdict = {}
+                exec(secf_dict[id]["unittest"]["testcases"], globals(), localdict)
+                extracted_tcs = localdict["testcases"]
+            except Exception as e:
+                print(e)
+                continue
+
+            secf_dict[id]["unittest"]["testcases"] = f'testcases = {extracted_tcs["capability"]}'
+            new_dict[id] = secf_dict[id]
+            
 
     with open("dataset/seccode-plus-filtered.jsonl", "w") as fp:
-        for id in secf_dict:
-            fp.write(json.dumps(secf_dict[id]) + "\n")
+        for id in new_dict:
+            fp.write(json.dumps(new_dict[id]) + "\n")
 
 if __name__ == "__main__":
     main()

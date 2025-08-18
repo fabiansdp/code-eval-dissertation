@@ -10,7 +10,7 @@ import subprocess
 
 from data import read_results, read_testcase, stream_jsonl, write_jsonl
 from execution import check_correctness, get_tcs
-from gotester import generate_go_tests, extract_return_types, insert_import, cd, clean_go_package_declaration
+from gotester import generate_go_tests, extract_return_types, insert_import, cd, clean_go_package_declaration, extract_arg_types
 from pathlib import Path, PosixPath
 
 
@@ -43,8 +43,6 @@ def estimate_pass_at_k(
 def create_test_code(
     setup: str, 
     result: str, 
-    test: str, 
-    function_name: str, 
     language: str
 ):
     if language == "python":
@@ -52,48 +50,9 @@ def create_test_code(
 {setup}
 {result}
 """
-# {test}
-    
-# """
-# tcs = []
-# for tc in testcases:
-#     tcs.append({
-#     "kwargs": tc[0],
-#     "output": tc[1]
-#     })
-# """ + f"""
-# """
-# exceptions = []
-# for item in tcs:
-#     try:
-#         output = {function_name}(**item["kwargs"])
-#         if isinstance(output, str):
-#             output = output.rstrip()
-#             item["output"] = item["output"].rstrip()
-
-#         assert output == item["output"]
-#     except AssertionError as ae:
-#         if isinstance(item["output"], str):
-#             ratio = fuzz.partial_ratio(item["output"], output)
-#             if ratio < 80:
-#                 exceptions.append(ae)
-#         else:
-#             exceptions.append(ae)
-
-#     except Exception as e:
-#         if type(e) == type(item["output"]):
-#             continue
-#         else:
-#             exceptions.append(e)
-
-# if len(exceptions) > 0:
-#     raise ExceptionGroup("there were problems", exceptions)    
-    
     if language == "go":
         return f"""{setup}
 {result}
-
-{test}
 """
 
 def evaluate_functional_correctness(
@@ -133,31 +92,29 @@ def evaluate_functional_correctness(
                 test = tcs[task_id]["tc"]
                 function_name = tcs[task_id]["function_name"]
 
+                is_func_correct = True if f"{function_name}" in result else False
                 if language == "go":
-                    returns = extract_return_types(result, function_name)
-                    test = generate_go_tests(test, function_name, returns)
-                    if "package main" not in sample:
-                        setup = tcs[task_id]["setup"] + "\n\n"
-
-                check_program = create_test_code(setup=setup, result=result, test=test, function_name=function_name, language=language)
-                if language == "go":
-                    check_program = clean_go_package_declaration(check_program)
+                    if is_func_correct:
+                        arg_types = extract_arg_types(result, function_name)
+                        returns = extract_return_types(result, function_name)
+                        if "package main" not in sample:
+                            setup = tcs[task_id]["setup"] + "\n\n"
 
                 testcases = []
-                try:
-                    testcases = get_tcs(test)
-                except Exception as e:
-                    print(e, task_id)
-#                     print(f"""{test}""" + """
-# tcs = []
-# for tc in testcases:
-#     tcs.append({
-#         "kwargs": tc[0],
-#         "output": tc[1]
-#     })
-# """)
-#                     print(test)
-                    continue
+                check_program = create_test_code(setup=setup, result=result, language=language)
+                if language == "go":
+                    try:
+                        testcases = generate_go_tests(test, function_name, arg_types, returns)
+                        check_program = clean_go_package_declaration(check_program)
+                    except:
+                        is_func_correct = False
+
+                if language == "python":
+                    try:
+                        testcases = get_tcs(test)
+                    except Exception as e:
+                        print(e, task_id)
+                        continue
 
                 args = {
                     "sample": {
@@ -166,7 +123,7 @@ def evaluate_functional_correctness(
                         "test_code": check_program,
                     },
                     "testcases": testcases,
-                    "is_func_correct": True if f"{function_name}" in result else False,
+                    "is_func_correct": is_func_correct,
                     "language": language,
                     "timeout": timeout,
                     "completion_id": completion_id[task_id]

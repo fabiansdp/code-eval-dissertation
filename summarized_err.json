@@ -1,0 +1,172 @@
+{
+    "py-codellama-0.0": {
+        "Timed Out": 0,
+        "Unexpected Result": 5772,
+        "Coding Errors": 14273,
+        "Invalid Code": 1328,
+        "total_tests": 43900
+    },
+    "py-codellama-0.4": {
+        "Timed Out": 46,
+        "Coding Errors": 15377,
+        "Unexpected Result": 5957,
+        "Invalid Code": 1221,
+        "External Package Errors": 3,
+        "total_tests": 43890
+    },
+    "py-codellama-0.8": {
+        "Timed Out": 74,
+        "Coding Errors": 16003,
+        "Unexpected Result": 5696,
+        "Invalid Code": 1892,
+        "External Package Errors": 160,
+        "total_tests": 43274
+    },
+    "py-codellama-1.0": {
+        "Timed Out": 71,
+        "Unexpected Result": 5098,
+        "Coding Errors": 16272,
+        "Invalid Code": 3998,
+        "External Package Errors": 260,
+        "Others": 8,
+        "total_tests": 42533
+    },
+    "py-deepseek-r1-0.0": {
+        "Timed Out": 0,
+        "total_tests": 90
+    },
+    "py-deepseekcoder-0.0": {
+        "Timed Out": 87,
+        "Unexpected Result": 6803,
+        "Coding Errors": 9025,
+        "Invalid Code": 1229,
+        "External Package Errors": 207,
+        "total_tests": 43900
+    },
+    "py-deepseekcoder-0.4": {
+        "Timed Out": 99,
+        "Unexpected Result": 7029,
+        "Coding Errors": 9012,
+        "External Package Errors": 437,
+        "Invalid Code": 1044,
+        "total_tests": 43900
+    },
+    "py-deepseekcoder-0.8": {
+        "Timed Out": 127,
+        "Unexpected Result": 7109,
+        "Coding Errors": 9953,
+        "Invalid Code": 1110,
+        "External Package Errors": 653,
+        "Others": 3,
+        "total_tests": 43832
+    },
+    "py-deepseekcoder-1.0": {
+        "Timed Out": 131,
+        "Unexpected Result": 7118,
+        "Coding Errors": 10204,
+        "Invalid Code": 1345,
+        "External Package Errors": 918,
+        "Others": 2,
+        "total_tests": 43819
+    },
+    "py-llama3.1-0.0": {
+        "Timed Out": 79,
+        "Unexpected Result": 6710,
+        "Coding Errors": 10523,
+        "Invalid Code": 1669,
+        "External Package Errors": 1249,
+        "total_tests": 43840
+    },
+    "py-llama3.1-0.4": {
+        "Timed Out": 93,
+        "Unexpected Result": 6964,
+        "Coding Errors": 10681,
+        "Invalid Code": 1327,
+        "External Package Errors": 1093,
+        "Others": 8,
+        "total_tests": 43846
+    },
+    "py-llama3.1-0.8": {
+        "Timed Out": 129,
+        "Unexpected Result": 7067,
+        "Coding Errors": 11280,
+        "Invalid Code": 1722,
+        "External Package Errors": 1204,
+        "Others": 3,
+        "total_tests": 43815
+    },
+    "py-llama3.1-1.0": {
+        "Timed Out": 166,
+        "Unexpected Result": 6783,
+        "Coding Errors": 11654,
+        "Invalid Code": 3740,
+        "External Package Errors": 1442,
+        "Others": 8,
+        "total_tests": 43696
+    },
+    "py-ministral-0.0": {
+        "Timed Out": 70,
+        "Unexpected Result": 7528,
+        "Invalid Code": 1729,
+        "Coding Errors": 7639,
+        "External Package Errors": 158,
+        "total_tests": 43900
+    },
+    "py-ministral-0.4": {
+        "Timed Out": 124,
+        "Unexpected Result": 7813,
+        "Coding Errors": 8120,
+        "Invalid Code": 1248,
+        "External Package Errors": 141,
+        "total_tests": 43900
+    },
+    "py-ministral-0.8": {
+        "Timed Out": 136,
+        "Unexpected Result": 7772,
+        "Coding Errors": 9410,
+        "Invalid Code": 1370,
+        "External Package Errors": 175,
+        "Others": 5,
+        "total_tests": 43853
+    },
+    "py-ministral-1.0": {
+        "Timed Out": 143,
+        "Coding Errors": 10125,
+        "Unexpected Result": 7185,
+        "Invalid Code": 2853,
+        "External Package Errors": 339,
+        "Others": 1,
+        "total_tests": 43789
+    },
+    "py-qwen-0.0": {
+        "Timed Out": 186,
+        "Coding Errors": 7898,
+        "Unexpected Result": 6619,
+        "Invalid Code": 1356,
+        "total_tests": 43900
+    },
+    "py-qwen-0.4": {
+        "Timed Out": 164,
+        "Coding Errors": 8065,
+        "Unexpected Result": 6636,
+        "Invalid Code": 1067,
+        "External Package Errors": 16,
+        "total_tests": 43900
+    },
+    "py-qwen-0.8": {
+        "Timed Out": 178,
+        "Coding Errors": 8850,
+        "Unexpected Result": 6784,
+        "External Package Errors": 71,
+        "Invalid Code": 1253,
+        "total_tests": 43889
+    },
+    "py-qwen-1.0": {
+        "Timed Out": 165,
+        "Unexpected Result": 6852,
+        "Invalid Code": 2103,
+        "Coding Errors": 9451,
+        "External Package Errors": 225,
+        "total_tests": 43800
+    }
+}

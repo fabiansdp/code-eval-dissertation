@@ -8,8 +8,12 @@ secure-llmseceval-samples
 temp_eval
 .env
 logs
+/sec-results
 /results
 /eval
+/eval-data
+/eval-go
+/sec-results-go
 codeql
 /codeql-results
 /new-results

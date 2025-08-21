@@ -39,6 +39,14 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
 RUN go install golang.org/x/tools/gopls@latest
 
+# Download and extract CodeQL
+# RUN curl -L https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.22.1/codeql-bundle-linux64.tar.gz | tar -xz -C /opt/ && \
+#     ln -s /opt/codeql /usr/local/bin/codeql
+RUN curl -L https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.22.1/codeql-bundle-linux64.tar.gz | tar -xz -C /opt/
+
+# Set PATH (optional if you're using the symlink)
+ENV PATH="/opt/codeql:$PATH"
+
 WORKDIR /app
 
 COPY requirements.txt /app

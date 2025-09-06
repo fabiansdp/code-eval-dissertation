@@ -1,0 +1,41 @@
+Model Name,Temp,Language,Clear-text logging of sensitive information,Bad HTML filtering regexp,Cross-site scripting via HTML template escaping bypass,Flask app is run in debug mode,Incomplete URL scheme check,Incomplete URL substring sanitization,Incomplete regular expression for hostnames,Incorrect conversion between integer types,Inefficient regular expression,Information exposure through an exception,Missing regular expression anchor,Overly permissive regular expression range,Potentially unsafe quoting,Reflected cross-site scripting,Suspicious characters in a regular expression,Uncontrolled data used in path expression,Use of a broken or weak cryptographic hashing algorithm on sensitive data,Use of insufficient randomness as the key of a cryptographic algorithm,Total
+CodeLlama,0,Go,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+CodeLlama,0.4,Go,77,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,80
+CodeLlama,0.8,Go,48,0,0,0,0,0,0,0,0,0,0,0,0,3,0,1,0,3,55
+CodeLlama,1,Go,65,0,0,0,1,0,2,0,0,0,2,0,0,4,0,2,0,8,84
+Deepseek Coder,0,Go,40,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40
+Deepseek Coder,0.4,Go,53,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,3,60
+Deepseek Coder,0.8,Go,41,0,0,0,0,0,2,0,0,0,2,0,0,1,0,0,0,3,49
+Deepseek Coder,1,Go,42,0,1,0,2,0,2,0,0,0,2,0,0,2,0,3,0,5,59
+Llama3.1,0,Go,60,0,0,0,0,0,0,10,0,0,0,0,0,0,0,30,0,10,110
+Llama3.1,0.4,Go,96,0,0,0,0,0,2,1,0,0,2,0,1,0,0,14,0,29,145
+Llama3.1,0.8,Go,76,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,11,91
+Llama3.1,1,Go,15,0,0,0,0,0,3,0,0,0,2,0,0,0,1,0,0,10,31
+Ministral,0,Go,170,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,200
+Ministral,0.4,Go,114,0,0,0,0,0,0,0,0,0,0,0,0,1,0,8,0,29,152
+Ministral,0.8,Go,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10
+Ministral,1,Go,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,10
+Qwen2.5 Coder,0,Go,110,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,130
+Qwen2.5 Coder,0.4,Go,101,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,16,119
+Qwen2.5 Coder,0.8,Go,101,0,0,0,0,0,0,0,0,0,1,0,0,1,0,9,0,17,129
+Qwen2.5 Coder,1,Go,114,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10,124
+CodeLlama,0,Python,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+CodeLlama,0.4,Python,2,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,4
+CodeLlama,0.8,Python,8,0,0,0,0,0,0,0,1,1,0,5,0,0,0,0,19,0,34
+CodeLlama,1,Python,13,3,0,0,0,0,0,0,0,0,0,2,0,0,0,0,3,0,21
+Deepseek Coder,0,Python,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,40,0,40
+Deepseek Coder,0.4,Python,7,1,0,0,0,0,0,0,2,0,0,1,0,0,0,0,27,0,38
+Deepseek Coder,0.8,Python,21,4,0,1,0,0,0,0,4,0,0,0,0,0,0,0,31,0,61
+Deepseek Coder,1,Python,38,3,0,2,0,0,0,0,0,0,0,0,0,0,0,0,47,0,90
+Llama3.1,0,Python,150,0,0,0,0,0,0,0,0,0,0,60,0,0,0,0,0,0,210
+Llama3.1,0.4,Python,128,0,0,0,0,0,0,0,0,0,0,22,0,0,0,0,0,0,150
+Llama3.1,0.8,Python,138,1,0,0,0,0,0,0,2,1,0,10,0,0,0,0,15,0,167
+Llama3.1,1,Python,119,0,0,0,0,0,0,0,1,1,0,11,0,0,0,0,10,0,142
+Ministral,0,Python,203,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,203
+Ministral,0.4,Python,168,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,169
+Ministral,0.8,Python,129,1,0,0,0,0,0,0,3,0,0,8,0,0,0,0,2,0,143
+Ministral,1,Python,136,0,0,0,0,1,0,0,5,0,0,9,0,0,0,0,5,0,156
+Qwen2.5 Coder,0,Python,10,10,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,30
+Qwen2.5 Coder,0.4,Python,10,11,0,0,0,0,0,0,4,0,0,2,0,0,0,0,0,0,27
+Qwen2.5 Coder,0.8,Python,25,33,0,0,0,0,0,0,4,0,0,4,0,0,0,0,3,0,69
+Qwen2.5 Coder,1,Python,32,27,0,0,0,0,0,0,4,0,0,1,0,0,0,0,6,0,70

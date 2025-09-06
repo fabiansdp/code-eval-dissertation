@@ -6,7 +6,8 @@ from gotester import cd
 import argparse
 
 def evaluate_security(sample_file: str, out_file: str, language: str = "python"):
-    tcs = read_testcase("dataset/seccode-go-plus-filtered.jsonl")
+    # tcs = read_testcase("dataset/seccode-go-plus-filtered.jsonl")
+    tcs = read_testcase("dataset/seccode-plus-filtered.jsonl")
     samples = read_results(sample_file)
     # idx = 0
     with create_tempdir():
@@ -14,6 +15,8 @@ def evaluate_security(sample_file: str, out_file: str, language: str = "python")
         Path(file_dir).mkdir(parents=True, exist_ok=True)
         for task_id in tcs:
             function_name = tcs[task_id]["function_name"]
+            if task_id not in samples:
+                 continue
             results = samples[task_id]
 
             for i in range(len(results)):
@@ -22,19 +25,21 @@ def evaluate_security(sample_file: str, out_file: str, language: str = "python")
                     continue
 
                 setup = ""
-                # if tcs[task_id]["setup"] not in results[i]:
-                #     setup = tcs[task_id]["setup"] + "\n\n"
-                if "package main" not in results[i]:
-                            setup = tcs[task_id]["setup"] + "\n\n"
+                if tcs[task_id]["setup"] not in results[i]:
+                    setup = tcs[task_id]["setup"] + "\n\n"
+                # if "package main" not in results[i]:
+                #             setup = tcs[task_id]["setup"] + "\n\n"
 
-                with open(f"{file_dir}/{task_id}-{i}.go", "w") as file:
+                # with open(f"{file_dir}/{task_id}-{i}.go", "w") as file:
+                with open(f"{file_dir}/{task_id}-{i}.py", "w") as file:
                     file.write(f"""{setup}
 {results[i]}""")
 
         with cd(f"{file_dir}"):
             subprocess.run(f"codeql database create db --language={language} --overwrite", shell=True)        
-            # subprocess.run(f"codeql database analyze db -v --format=sarif-latest --output=/app/codeql-results/{out_file}.sarif", shell=True)        
-            subprocess.run(f"codeql database analyze db -v --format=csv --output=/app/codeql-results/{out_file}.csv", shell=True)        
+            subprocess.run(f"codeql database finalize db", shell=True)        
+            subprocess.run(f"codeql database analyze db -v --format=sarif-latest --output=/app/codeql-results/{out_file}.sarif", shell=True)        
+            # subprocess.run(f"codeql database analyze db -v --format=csv --output=/app/codeql-results/{out_file}.csv", shell=True)        
 
 
 def setup_parser(parser: argparse.ArgumentParser):

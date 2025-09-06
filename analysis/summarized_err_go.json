@@ -1,0 +1,422 @@
+{
+    "go-codellama-0.0": {
+        "errors": {
+            "Timed Out": 29,
+            "Unexpected Result": 4677,
+            "Invalid Code": 24460,
+            "Coding Errors": 950,
+            "External Package Errors": 100,
+            "Others": 280,
+            "total_tests": 30496
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 16860,
+            "Assignment Error": 320,
+            "Type Error": 270,
+            "Parsing Error": 740,
+            "Value Arity Error": 60,
+            "Build/Setup Failed": 6210,
+            "Other": 0
+        }
+    },
+    "go-codellama-0.4": {
+        "errors": {
+            "Timed Out": 18,
+            "Unexpected Result": 4716,
+            "Invalid Code": 24795,
+            "Coding Errors": 556,
+            "External Package Errors": 100,
+            "Others": 285,
+            "total_tests": 30470
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 16912,
+            "Assignment Error": 312,
+            "Type Error": 168,
+            "Parsing Error": 690,
+            "Value Arity Error": 128,
+            "Build/Setup Failed": 6585,
+            "Other": 0
+        }
+    },
+    "go-codellama-0.8": {
+        "errors": {
+            "Timed Out": 19,
+            "Unexpected Result": 4800,
+            "Invalid Code": 26740,
+            "Coding Errors": 539,
+            "External Package Errors": 46,
+            "Others": 140,
+            "total_tests": 32284
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 16407,
+            "Assignment Error": 226,
+            "Type Error": 234,
+            "Parsing Error": 1878,
+            "Value Arity Error": 292,
+            "Build/Setup Failed": 7703,
+            "Other": 0
+        }
+    },
+    "go-codellama-1.0": {
+        "errors": {
+            "Timed Out": 11,
+            "Unexpected Result": 3785,
+            "Invalid Code": 29101,
+            "Coding Errors": 428,
+            "External Package Errors": 35,
+            "Others": 114,
+            "total_tests": 33474
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 15801,
+            "Assignment Error": 99,
+            "Type Error": 210,
+            "Parsing Error": 4383,
+            "Value Arity Error": 270,
+            "Build/Setup Failed": 8338,
+            "Other": 0
+        }
+    },
+    "go-deepseekcoder-0.0": {
+        "errors": {
+            "Timed Out": 0,
+            "Unexpected Result": 8085,
+            "Invalid Code": 16210,
+            "Coding Errors": 1420,
+            "External Package Errors": 70,
+            "Others": 170,
+            "total_tests": 25955
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 6940,
+            "Assignment Error": 0,
+            "Type Error": 60,
+            "Parsing Error": 160,
+            "Value Arity Error": 0,
+            "Build/Setup Failed": 9050,
+            "Other": 0
+        }
+    },
+    "go-deepseekcoder-0.4": {
+        "errors": {
+            "Timed Out": 22,
+            "Unexpected Result": 7740,
+            "Invalid Code": 17411,
+            "Coding Errors": 1138,
+            "External Package Errors": 70,
+            "Others": 166,
+            "total_tests": 26547
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 8264,
+            "Assignment Error": 38,
+            "Type Error": 22,
+            "Parsing Error": 230,
+            "Value Arity Error": 0,
+            "Build/Setup Failed": 8857,
+            "Other": 0
+        }
+    },
+    "go-deepseekcoder-0.8": {
+        "errors": {
+            "Timed Out": 109,
+            "Unexpected Result": 7233,
+            "Invalid Code": 18399,
+            "Coding Errors": 940,
+            "External Package Errors": 72,
+            "Others": 154,
+            "total_tests": 26907
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 8182,
+            "Assignment Error": 16,
+            "Type Error": 81,
+            "Parsing Error": 789,
+            "Value Arity Error": 18,
+            "Build/Setup Failed": 9313,
+            "Other": 0
+        }
+    },
+    "go-deepseekcoder-1.0": {
+        "errors": {
+            "Timed Out": 83,
+            "Unexpected Result": 6605,
+            "Invalid Code": 20720,
+            "Coding Errors": 786,
+            "External Package Errors": 66,
+            "Others": 90,
+            "total_tests": 28350
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 8182,
+            "Assignment Error": 33,
+            "Type Error": 109,
+            "Parsing Error": 2062,
+            "Value Arity Error": 13,
+            "Build/Setup Failed": 10321,
+            "Other": 0
+        }
+    },
+    "go-llama3.1-0.0": {
+        "errors": {
+            "Timed Out": 0,
+            "Unexpected Result": 3948,
+            "Invalid Code": 28040,
+            "Coding Errors": 530,
+            "External Package Errors": 30,
+            "Others": 440,
+            "total_tests": 32988
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 9400,
+            "Assignment Error": 460,
+            "Type Error": 150,
+            "Parsing Error": 6420,
+            "Value Arity Error": 90,
+            "Build/Setup Failed": 11520,
+            "Other": 0
+        }
+    },
+    "go-llama3.1-0.4": {
+        "errors": {
+            "Timed Out": 17,
+            "Unexpected Result": 4431,
+            "Invalid Code": 28541,
+            "Coding Errors": 692,
+            "External Package Errors": 75,
+            "Others": 350,
+            "total_tests": 34106
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 9837,
+            "Assignment Error": 412,
+            "Type Error": 333,
+            "Parsing Error": 5683,
+            "Value Arity Error": 123,
+            "Build/Setup Failed": 12153,
+            "Other": 0
+        }
+    },
+    "go-llama3.1-0.8": {
+        "errors": {
+            "Timed Out": 27,
+            "Unexpected Result": 3425,
+            "Invalid Code": 31679,
+            "Coding Errors": 564,
+            "External Package Errors": 68,
+            "Others": 151,
+            "total_tests": 35914
+        },
+        "invalid_code_types": {
+            "Syntax Error": 22,
+            "Undefined Identifier": 9621,
+            "Assignment Error": 194,
+            "Type Error": 403,
+            "Parsing Error": 7428,
+            "Value Arity Error": 226,
+            "Build/Setup Failed": 13785,
+            "Other": 0
+        }
+    },
+    "go-llama3.1-1.0": {
+        "errors": {
+            "Timed Out": 5,
+            "Unexpected Result": 2202,
+            "Invalid Code": 34863,
+            "Coding Errors": 405,
+            "External Package Errors": 34,
+            "Others": 83,
+            "total_tests": 37592
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 9093,
+            "Assignment Error": 154,
+            "Type Error": 440,
+            "Parsing Error": 11067,
+            "Value Arity Error": 203,
+            "Build/Setup Failed": 13906,
+            "Other": 0
+        }
+    },
+    "go-ministral-0.0": {
+        "errors": {
+            "Timed Out": 0,
+            "Unexpected Result": 7898,
+            "Invalid Code": 16330,
+            "Coding Errors": 960,
+            "External Package Errors": 70,
+            "Others": 680,
+            "total_tests": 25938
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 1650,
+            "Assignment Error": 130,
+            "Type Error": 130,
+            "Parsing Error": 2360,
+            "Value Arity Error": 0,
+            "Build/Setup Failed": 12060,
+            "Other": 0
+        }
+    },
+    "go-ministral-0.4": {
+        "errors": {
+            "Timed Out": 104,
+            "Unexpected Result": 7035,
+            "Invalid Code": 17093,
+            "Coding Errors": 917,
+            "External Package Errors": 258,
+            "Others": 541,
+            "total_tests": 25948
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 2334,
+            "Assignment Error": 273,
+            "Type Error": 389,
+            "Parsing Error": 1980,
+            "Value Arity Error": 113,
+            "Build/Setup Failed": 12004,
+            "Other": 0
+        }
+    },
+    "go-ministral-0.8": {
+        "errors": {
+            "Timed Out": 70,
+            "Unexpected Result": 6295,
+            "Invalid Code": 20717,
+            "Coding Errors": 890,
+            "External Package Errors": 224,
+            "Others": 284,
+            "total_tests": 28480
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 5153,
+            "Assignment Error": 204,
+            "Type Error": 546,
+            "Parsing Error": 1654,
+            "Value Arity Error": 297,
+            "Build/Setup Failed": 12863,
+            "Other": 0
+        }
+    },
+    "go-ministral-1.0": {
+        "errors": {
+            "Timed Out": 166,
+            "Unexpected Result": 4662,
+            "Invalid Code": 24970,
+            "Coding Errors": 616,
+            "External Package Errors": 112,
+            "Others": 201,
+            "total_tests": 30727
+        },
+        "invalid_code_types": {
+            "Syntax Error": 5,
+            "Undefined Identifier": 5896,
+            "Assignment Error": 140,
+            "Type Error": 509,
+            "Parsing Error": 4543,
+            "Value Arity Error": 248,
+            "Build/Setup Failed": 13629,
+            "Other": 0
+        }
+    },
+    "go-qwen-0.0": {
+        "errors": {
+            "Timed Out": 0,
+            "Unexpected Result": 6474,
+            "Invalid Code": 14929,
+            "Coding Errors": 1173,
+            "External Package Errors": 660,
+            "Others": 530,
+            "total_tests": 23766
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 3916,
+            "Assignment Error": 332,
+            "Type Error": 50,
+            "Parsing Error": 192,
+            "Value Arity Error": 140,
+            "Build/Setup Failed": 10299,
+            "Other": 0
+        }
+    },
+    "go-qwen-0.4": {
+        "errors": {
+            "Timed Out": 10,
+            "Unexpected Result": 6966,
+            "Invalid Code": 15747,
+            "Coding Errors": 1163,
+            "External Package Errors": 562,
+            "Others": 490,
+            "total_tests": 24938
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 4501,
+            "Assignment Error": 263,
+            "Type Error": 31,
+            "Parsing Error": 470,
+            "Value Arity Error": 80,
+            "Build/Setup Failed": 10402,
+            "Other": 0
+        }
+    },
+    "go-qwen-0.8": {
+        "errors": {
+            "Timed Out": 10,
+            "Unexpected Result": 6571,
+            "Invalid Code": 18248,
+            "Coding Errors": 1088,
+            "External Package Errors": 433,
+            "Others": 353,
+            "total_tests": 26703
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 6827,
+            "Assignment Error": 245,
+            "Type Error": 108,
+            "Parsing Error": 782,
+            "Value Arity Error": 60,
+            "Build/Setup Failed": 10226,
+            "Other": 0
+        }
+    },
+    "go-qwen-1.0": {
+        "errors": {
+            "Timed Out": 20,
+            "Unexpected Result": 5990,
+            "Invalid Code": 20575,
+            "Coding Errors": 960,
+            "External Package Errors": 256,
+            "Others": 260,
+            "total_tests": 28061
+        },
+        "invalid_code_types": {
+            "Syntax Error": 0,
+            "Undefined Identifier": 7935,
+            "Assignment Error": 168,
+            "Type Error": 164,
+            "Parsing Error": 1990,
+            "Value Arity Error": 68,
+            "Build/Setup Failed": 10250,
+            "Other": 0
+        }
+    }
+}

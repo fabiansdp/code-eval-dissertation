@@ -38,6 +38,8 @@ def extract_vulnerable_samples(csv_file: str, output: str):
         for line in fp:
             data = json.loads(line)
             result_dict[data["task_id"]] = {
+                "task_id": data["task_id"],
+                "cwe_id": data["cwe_id"],
                 "results": []
             }
 
